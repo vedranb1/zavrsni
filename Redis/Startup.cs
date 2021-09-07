@@ -25,6 +25,7 @@ namespace Redis
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            Console.WriteLine("testing..");
             services.AddControllersWithViews();
             services.AddDbContext<RedisContext>(options => options.UseMySQL(Configuration.GetConnectionString("Default")));
             services.AddDistributedMemoryCache();
