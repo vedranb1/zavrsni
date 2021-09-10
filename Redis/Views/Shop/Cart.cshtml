@@ -1,0 +1,45 @@
+﻿@model Redis.ViewModels.CartViewModel
+@{
+    ViewData["Title"] = "Cart";
+}
+
+<div class="d-flex justify-content-between">
+    <h1 class="mb-2">Shopping cart</h1>
+</div>
+
+<table class="table">
+    <thead class="thead-light">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">Genre</th>
+            <th scope="col">Price</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.CartItems.Count > 0)
+        {
+            @foreach (var game in Model.CartItems)
+            {
+                <tr>
+                    <th scope="row"><img src="@game.ImageUrl" alt="@game.Name" style="width: 150px" /></th>
+                    <td>@game.Name</td>
+                    <td>@game.Genre</td>
+                    <td><span>@game.Price</span>€</td>
+                    <td><button type="button" class="btn btn-danger" onclick="removeFromCart(@game.Id)">Ukloni iz košarice</button></td>
+                </tr>
+            }
+            <tr>
+                <td colspan="4" class="font-weight-bold text-right">Total: </td>
+                <td class="font-weight-bold"><span>@Model.TotalPrice()</span>€</td>
+            </tr>
+        } else
+        {
+            <tr>
+                <td colspan="5">Your cart is empty.</td>
+            </tr>
+        }
+
+    </tbody>
+</table>

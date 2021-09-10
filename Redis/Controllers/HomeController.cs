@@ -1,7 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Redis.Context;
 using Redis.Models;
+using Redis.ViewModels;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,25 +17,38 @@ namespace Redis.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-        private readonly RedisContext _context;
-        public HomeController(ILogger<HomeController> logger, RedisContext context)
+        private readonly MysqlContext _context;
+        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IDatabase _redisDb;
+
+        public HomeController(
+            MysqlContext context, 
+            SignInManager<IdentityUser> signInManager, 
+            UserManager<IdentityUser> userManager, 
+            RoleManager<IdentityRole> roleManager,
+            IConnectionMultiplexer multiplexer)
         {
-            _logger = logger;
             _context = context;
+            _signInManager = signInManager;
+            _userManager = userManager;
+            _roleManager = roleManager;
+            _redisDb = multiplexer.GetDatabase();
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(IndexViewModel model)
         {
-            var igra = new Igra();
-            igra.Cijena = 5.2m;
-            igra.Naziv = "Kurac";
-            igra.Zanr = "asdasd";
+            model.ItemsCounter = 0;
 
-            _context.Add(igra);
-            await _context.SaveChangesAsync();
+            if (_signInManager.IsSignedIn(User))
+            {
+                string username = _userManager.GetUserName(User);
+                
+                model.ItemsCounter = (int) await _redisDb.ListLengthAsync(username);
+            }
 
-            return View();
+            return View(model);
         }
 
         public IActionResult Privacy()
@@ -38,10 +56,133 @@ namespace Redis.Controllers
             return View();
         }
 
+        public IActionResult Registration()
+        {
+            return View();
+        }
+
+        public IActionResult Login(int counter)
+        {
+            LoginViewModel model = new LoginViewModel()
+            {
+                FailedAttempts = 0
+            };
+
+            if (counter != 0)
+            {
+                model.FailedAttempts = counter;
+            }
+
+            return View(model);
+        }
+
+        public async Task<IActionResult> Logout(LogoutViewModel model)
+        {
+            model.ItemsCounter = 0;
+
+            if (_signInManager.IsSignedIn(User))
+            {
+                string username = _userManager.GetUserName(User);
+
+                model.ItemsCounter = (int)await _redisDb.ListLengthAsync(username);
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> LoginUser(LoginViewModel model, string returnUrl = null)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberMe, false);
+
+                if (result.Succeeded)
+                {
+                    ResetFailedAttempts(model.Username);
+
+                    if (returnUrl == null || returnUrl == "")
+                    {
+                        return RedirectToAction("Index");
+                    }
+                    else
+                    {
+                        return RedirectToAction(returnUrl);
+                    }
+                } else
+                {
+                    int counter = await IncrementFailedAttempts(model.Username);
+
+                    return RedirectToAction("Login", new { counter = counter });
+                }
+            } 
+
+            return View("./Login");
+        }
+        
+        [HttpPost]
+        public async Task<IActionResult> RegisterUser(RegistrationViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = new IdentityUser()
+                {
+                    UserName = model.Username,
+                    Email = model.Email,
+                };
+
+                var result = await _userManager.CreateAsync(user, model.Password);
+
+                if (result.Succeeded)
+                {
+                    await _signInManager.SignInAsync(user, false);
+
+                    return RedirectToAction("Index");
+                }
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+
+                ModelState.AddModelError("", "Username or Password is incorrect.");
+            }
+
+            return View("Home/Registration");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> LogoutUser()
+        {
+            await _signInManager.SignOutAsync();
+
+            return RedirectToAction("Login");
+        }
+
+        [HttpPost]
+        public IActionResult DontLogoutUser()
+        {
+            return RedirectToAction("Index");
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        public async Task<int> IncrementFailedAttempts(string username)
+        {
+            string key = username + "fa"; 
+
+            return (int) await _redisDb.StringIncrementAsync(key);
+        }
+            
+        public async void ResetFailedAttempts(string username)
+        {
+            string key = username + "fa";
+
+            await _redisDb.KeyDeleteAsync(key);
         }
     }
 }

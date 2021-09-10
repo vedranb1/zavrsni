@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Redis.Context;
+using ServiceStack.Redis;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,12 +28,26 @@ namespace Redis
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            Console.WriteLine("testing..");
             services.AddControllersWithViews();
-            services.AddDbContext<RedisContext>(options => options.UseMySQL(Configuration.GetConnectionString("Default")));
+            services.AddDbContext<MysqlContext>(options => options.UseMySQL(Configuration.GetConnectionString("Default")));
+            services.AddIdentity<IdentityUser, IdentityRole>()
+                .AddEntityFrameworkStores<MysqlContext>();
+            services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(Configuration.GetConnectionString("Redis")));
             services.AddDistributedMemoryCache();
             services.AddSession(options => {
                 options.IdleTimeout = TimeSpan.FromMinutes(15);//You can set Time   
+            });
+
+            services.AddMvcCore()
+                    .AddApiExplorer()
+                    .AddJsonOptions(options =>
+                    {
+                        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+                    });
+
+            services.ConfigureApplicationCookie(config =>
+            {
+                config.LoginPath = "/Login";
             });
         }
 
@@ -51,6 +68,8 @@ namespace Redis
             app.UseStaticFiles();
 
             app.UseRouting();
+            app.UseAuthentication();
+
 
             app.UseAuthorization();
 
