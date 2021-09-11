@@ -29,19 +29,28 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Shop" asp-action="Shop">Shop</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Shop" asp-action="Index">Shop</a>
                             </li>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Management" asp-action="Index">Management</a>
+                                </li>
+                            }
                         </ul>
                         <ul class="navbar-nav d-flex align-items-center justify-content-end">
-                            <li class="nav-item">
-                                <a class="nav-link cart-link text-dark" asp-area="" asp-controller="Shop" asp-action="Cart">
-                                    <span>Cart</span>
-                                    <div class="cart-link__content">
-                                        <i class="bi-cart cart-link__icon"></i>
-                                        <span class="badge badge-info cart-link__counter">@Model.ItemsCounter</span>
-                                    </div>
-                                </a>
-                            </li>
+                            @if (User.IsInRole("User"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link cart-link text-dark" asp-area="" asp-controller="Shop" asp-action="Cart">
+                                        <span>Cart</span>
+                                        <div class="cart-link__content">
+                                            <i class="bi-cart cart-link__icon"></i>
+                                            <span class="badge badge-info cart-link__counter">@Model.ItemsCounter</span>
+                                        </div>
+                                    </a>
+                                </li>
+                            }
                             <li class="nav-item">
                                 <a class="btn btn-primary" asp-area="" asp-controller="Home" asp-action="Logout">Logout</a>
                             </li>

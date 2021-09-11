@@ -6,12 +6,8 @@ using System.Threading.Tasks;
 
 namespace Redis.ViewModels
 {
-    public class RegistrationViewModel : BaseViewModel
+    public class HomeLoginViewModel : BaseViewModel
     {
-        [Required]
-        [DataType(DataType.EmailAddress)]
-        public string Email { get; set; }
-
         [Required]
         [DataType(DataType.Text)]
         public string Username { get; set; }
@@ -19,10 +15,7 @@ namespace Redis.ViewModels
         [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; }
-        
-        [Required]
-        [DataType(DataType.Password)]
-        [Compare(nameof(Password), ErrorMessage = "Passwords must match!")]
-        public string ConfirmPassword { get; set; }
+        public bool RememberMe { get; set; }
+        public int FailedAttempts { get; set; } = 0;
     }
 }

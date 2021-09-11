@@ -1,4 +1,4 @@
-﻿@model Redis.ViewModels.CartViewModel
+﻿@model Redis.ViewModels.ShopCartViewModel
 @{
     ViewData["Title"] = "Cart";
 }
@@ -27,7 +27,7 @@
                     <td>@game.Name</td>
                     <td>@game.Genre</td>
                     <td><span>@game.Price</span>€</td>
-                    <td><button type="button" class="btn btn-danger" onclick="removeFromCart(@game.Id)">Ukloni iz košarice</button></td>
+                    <td><button type="button" class="btn btn-danger" onclick="removeFromCart(@game.Id)">Remove from cart</button></td>
                 </tr>
             }
             <tr>

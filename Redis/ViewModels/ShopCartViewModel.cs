@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Redis.ViewModels
 {
-    public class CartViewModel : BaseViewModel
+    public class ShopCartViewModel : BaseViewModel
     {
         public List<Game> CartItems { get; set; }
 

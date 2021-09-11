@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Redis.ViewModels
 {
-    public class IndexViewModel : BaseViewModel
+    public class HomeIndexViewModel : BaseViewModel
     {
 
     }

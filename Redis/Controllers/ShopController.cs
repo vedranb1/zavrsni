@@ -33,20 +33,30 @@ namespace Redis.Controllers
             _redisDb = multiplexer.GetDatabase();
         }
 
-        public async Task<IActionResult> Shop(ShopViewModel model)
+        public async Task<IActionResult> Index(ShopIndexViewModel model)
         {
             if (ModelState.IsValid)
             {
+                var games = _context.Games.ToList();
                 string username = _userManager.GetUserName(User);
 
-                model.ItemsCounter = (int) await _redisDb.ListLengthAsync(username);
-                model.Games = _context.Games.ToList();
+                var listLength = (int) await _redisDb.ListLengthAsync(username);
+
+                for (int i = 0; i < listLength; i++)
+                {
+                    var game = (int) await _redisDb.ListGetByIndexAsync(username, i);
+
+                    games.Remove(_context.Games.First(c => c.Id == game));
+                }
+
+                model.Games = games;
+                model.ItemsCounter = listLength;
             }
 
             return View(model);
         }
 
-        public async Task<IActionResult> Cart(CartViewModel model)
+        public async Task<IActionResult> Cart(ShopCartViewModel model)
         {
             if (ModelState.IsValid)
             {
@@ -78,9 +88,8 @@ namespace Redis.Controllers
         {
             string username = _userManager.GetUserName(User);
 
-            var res = await _redisDb.ListRightPushAsync(username, userGame.id);
-            var listLength = await _redisDb.ListLengthAsync(username);
-
+            var listLength = await _redisDb.ListRightPushAsync(username, userGame.id);
+            
             return Ok(listLength);
         }
 
@@ -89,33 +98,9 @@ namespace Redis.Controllers
         {
             string username = _userManager.GetUserName(User);
 
-            var res = _redisDb.ListRemoveAsync(username, userGame.id, 1);
-            var listLength = await _redisDb.ListLengthAsync(username);
+            var listLength = await _redisDb.ListRemoveAsync(username, userGame.id, 1);
 
             return Ok(listLength);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> AddGame(ShopViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                var game = new Game()
-                {
-                    Name = model.Name,
-                    Genre = model.Genre,
-                    Price = model.Price,
-                    ImageUrl = model.ImageUrl
-                };
-
-                await _context.Games.AddAsync(game);
-                await _context.SaveChangesAsync();
-            }
-
-            model.Games = _context.Games.ToList();
-            model.ItemsCounter = model.Games.Count;
-
-            return View("Shop", model);
         }
     }
 }

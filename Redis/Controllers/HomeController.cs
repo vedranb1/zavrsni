@@ -37,7 +37,7 @@ namespace Redis.Controllers
             _redisDb = multiplexer.GetDatabase();
         }
 
-        public async Task<IActionResult> Index(IndexViewModel model)
+        public async Task<IActionResult> Index(HomeIndexViewModel model)
         {
             model.ItemsCounter = 0;
 
@@ -63,7 +63,7 @@ namespace Redis.Controllers
 
         public IActionResult Login(int counter)
         {
-            LoginViewModel model = new LoginViewModel()
+            HomeLoginViewModel model = new HomeLoginViewModel()
             {
                 FailedAttempts = 0
             };
@@ -76,7 +76,7 @@ namespace Redis.Controllers
             return View(model);
         }
 
-        public async Task<IActionResult> Logout(LogoutViewModel model)
+        public async Task<IActionResult> Logout(HomeLogoutViewModel model)
         {
             model.ItemsCounter = 0;
 
@@ -91,7 +91,7 @@ namespace Redis.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> LoginUser(LoginViewModel model, string returnUrl = null)
+        public async Task<IActionResult> LoginUser(HomeLoginViewModel model, string returnUrl = null)
         {
             if (ModelState.IsValid)
             {
@@ -121,7 +121,7 @@ namespace Redis.Controllers
         }
         
         [HttpPost]
-        public async Task<IActionResult> RegisterUser(RegistrationViewModel model)
+        public async Task<IActionResult> RegisterUser(HomeRegistrationViewModel model)
         {
             if (ModelState.IsValid)
             {

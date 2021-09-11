@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Redis.ViewModels
 {
-    public class LogoutViewModel : BaseViewModel
+    public class HomeLogoutViewModel : BaseViewModel
     {
     }
 }

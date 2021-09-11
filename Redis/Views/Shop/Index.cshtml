@@ -1,0 +1,32 @@
+﻿@model Redis.ViewModels.ShopIndexViewModel
+@{
+    ViewData["Title"] = "Shop";
+}
+
+<div class="d-flex justify-content-between align-items-center">
+    <h1 class="mb-2">Shop</h1>
+</div>
+
+<table class="table">
+    <thead class="thead-light">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">Genre</th>
+            <th scope="col">Price</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var game in Model.Games)
+        {
+            <tr>
+                <th scope="row"><img src="@game.ImageUrl" alt="@game.Name" style="width: 150px" /></th>
+                <td>@game.Name</td>
+                <td>@game.Genre</td>
+                <td><span>@game.Price</span>€</td>
+                <td><button type="button" class="btn btn-info" onclick="addToCart(@game.Id)">Add to cart</button></td>
+            </tr>
+        }
+    </tbody>
+</table>

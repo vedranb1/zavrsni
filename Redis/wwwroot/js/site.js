@@ -40,3 +40,13 @@ function removeFromCart(gameId) {
         }
     });
 }
+
+function editGame(id, name, genre, price, imageUrl) {
+    $('#addOrUpdateGameModal').modal('show');
+
+    $('#Id').val(id);
+    $('#Name').val(name);
+    $('#Genre').val(genre);
+    $('#Price').val(price);
+    $('#ImageUrl').val(imageUrl);
+}
