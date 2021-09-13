@@ -11,7 +11,7 @@ function addToCart(gameId) {
         dataType: 'json',
         contentType: 'application/json',
         success: function (response) {
-            console.log(response);
+            location.reload();
         },
         failure: function (response) {
             console.log(response);
@@ -30,7 +30,7 @@ function removeFromCart(gameId) {
         dataType: 'json',
         contentType: 'application/json',
         success: function (response) {
-            console.log(response);
+            location.reload();
         },
         failure: function (response) {
             console.log(response);

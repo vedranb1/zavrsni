@@ -19,7 +19,6 @@ namespace Redis.Controllers
     {
         private readonly MysqlContext _context;
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly IConnectionMultiplexer _multiplexer;
         private readonly IDatabase _redisDb;
 
         public ShopController(
@@ -29,7 +28,6 @@ namespace Redis.Controllers
         {
             _context = context;
             _userManager = userManager;
-            _multiplexer = multiplexer;
             _redisDb = multiplexer.GetDatabase();
         }
 
@@ -39,8 +37,10 @@ namespace Redis.Controllers
             {
                 var games = _context.Games.ToList();
                 string username = _userManager.GetUserName(User);
+                string key = username + "dm";
 
-                var listLength = (int) await _redisDb.ListLengthAsync(username);
+                int listLength = (int) await _redisDb.ListLengthAsync(username);
+                int darkMode = (int)await _redisDb.StringGetAsync(key);
 
                 for (int i = 0; i < listLength; i++)
                 {
@@ -50,6 +50,7 @@ namespace Redis.Controllers
                 }
 
                 model.Games = games;
+                model.DarkTheme = (darkMode == 1) ? true : false;
                 model.ItemsCounter = listLength;
             }
 
@@ -63,11 +64,14 @@ namespace Redis.Controllers
                 List<Game> itemsInCart = new List<Game>();
 
                 string username = _userManager.GetUserName(User);
-                var listLength = await _redisDb.ListLengthAsync(username);
+                string key = username + "dm";
+
+                int listLength = (int) await _redisDb.ListLengthAsync(username);
+                int darkMode = (int)await _redisDb.StringGetAsync(key);
 
                 for (int i = 0; i < listLength; i++)
                 {
-                    int gameId = (int)await _redisDb.ListGetByIndexAsync(username, i);
+                    int gameId = (int) await _redisDb.ListGetByIndexAsync(username, i);
                     var game = _context.Games.FirstOrDefault(game => game.Id == gameId);
 
                     if (game != null)
@@ -77,6 +81,7 @@ namespace Redis.Controllers
                 }
 
                 model.CartItems = itemsInCart;
+                model.DarkTheme = (darkMode == 1) ? true : false;
                 model.ItemsCounter = itemsInCart.Count;
             }
 

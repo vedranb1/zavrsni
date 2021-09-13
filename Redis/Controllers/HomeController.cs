@@ -20,40 +20,50 @@ namespace Redis.Controllers
         private readonly MysqlContext _context;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IDatabase _redisDb;
 
         public HomeController(
             MysqlContext context, 
             SignInManager<IdentityUser> signInManager, 
             UserManager<IdentityUser> userManager, 
-            RoleManager<IdentityRole> roleManager,
             IConnectionMultiplexer multiplexer)
         {
             _context = context;
             _signInManager = signInManager;
             _userManager = userManager;
-            _roleManager = roleManager;
             _redisDb = multiplexer.GetDatabase();
         }
 
         public async Task<IActionResult> Index(HomeIndexViewModel model)
         {
             model.ItemsCounter = 0;
+            model.DarkTheme = false;
 
             if (_signInManager.IsSignedIn(User))
             {
                 string username = _userManager.GetUserName(User);
-                
+                string key = username + "dm";
+
+                int darkMode = (int)await _redisDb.StringGetAsync(key);
+
+                model.DarkTheme = (darkMode == 1) ? true : false;
                 model.ItemsCounter = (int) await _redisDb.ListLengthAsync(username);
             }
 
             return View(model);
         }
 
-        public IActionResult Privacy()
+        public async Task<IActionResult> Settings(SettingsViewModel model)
         {
-            return View();
+            string username = _userManager.GetUserName(User);
+            string key = username + "dm";
+
+            int darkMode = (int) await _redisDb.StringGetAsync(key);
+
+            model.DarkTheme = (darkMode == 1) ? true : false;
+            model.ItemsCounter = (int) await _redisDb.ListLengthAsync(username);
+
+            return View(model);
         }
 
         public IActionResult Registration()
@@ -78,12 +88,17 @@ namespace Redis.Controllers
 
         public async Task<IActionResult> Logout(HomeLogoutViewModel model)
         {
+            model.DarkTheme = false;
             model.ItemsCounter = 0;
 
             if (_signInManager.IsSignedIn(User))
             {
                 string username = _userManager.GetUserName(User);
+                string key = username + "dm";
 
+                int darkMode = (int)await _redisDb.StringGetAsync(key);
+
+                model.DarkTheme = (darkMode == 1) ? true : false;
                 model.ItemsCounter = (int)await _redisDb.ListLengthAsync(username);
             }
 
@@ -148,7 +163,7 @@ namespace Redis.Controllers
                 ModelState.AddModelError("", "Username or Password is incorrect.");
             }
 
-            return View("Home/Registration");
+            return View("Registration");
         }
 
         [HttpPost]
@@ -163,6 +178,22 @@ namespace Redis.Controllers
         public IActionResult DontLogoutUser()
         {
             return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveSettings(SettingsViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                string username = _userManager.GetUserName(User);
+                string key = username + "dm";
+
+                int val = model.DarkTheme ? 1 : 0;
+
+                await _redisDb.StringSetAsync(key, val);
+            }
+
+            return View("Settings", model);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Redis.Context;
 using Redis.Models;
 using Redis.ViewModels;
@@ -13,16 +14,24 @@ namespace Redis.Controllers
     public class ManagementController : Controller
     {
         private readonly MysqlContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
         private readonly IDatabase _redisDb;
-        public ManagementController(MysqlContext context, IConnectionMultiplexer multiplexer)
+        public ManagementController(MysqlContext context, UserManager<IdentityUser> userManager, IConnectionMultiplexer multiplexer)
         {
             _context = context;
+            _userManager = userManager;
             _redisDb = multiplexer.GetDatabase();
         }
 
-        public IActionResult Index(ManagementIndexViewModel model)
+        public async Task<IActionResult> Index(ManagementIndexViewModel model)
         {
+            string username = _userManager.GetUserName(User);
+            string key = username + "dm";
+
+            int darkMode = (int)await _redisDb.StringGetAsync(key);
+
             model.Games = _context.Games.ToList();
+            model.DarkTheme = (darkMode == 1) ? true : false;
 
             return View(model);
         }

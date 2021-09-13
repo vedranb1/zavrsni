@@ -1,0 +1,70 @@
+﻿body {
+    color: #fff !important;
+    background-color: #343a40 !important;
+}
+
+.navbar-brand {
+    color: #fff !important;
+}
+
+nav.navbar.bg-white {
+    color: #fff !important;
+    background-color: #343a40 !important;
+}
+
+nav.navbar.border-bottom {
+    border-bottom: 1px solid rgba(0, 0, 0, .25) !important;
+}
+
+.nav-item .nav-link  {
+    color: #fff !important;
+}
+
+.nav-item .nav-link:hover {
+    color: #fff !important;
+    font-weight: bold !important;
+}
+
+.footer.border-top {
+    border-top: none !important;
+}
+
+.text {
+    color: #fff;
+}
+
+.thead-light {
+
+}
+
+.table .thead-light th {
+    background-color: #343a40 !important;
+    color: #fff !important;
+    border-color: #dee2e6 !important;
+}
+
+td {
+    color: #fff !important;
+}
+
+.nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
+    background-color: #343a40 !important;
+    color: #fff !important;
+    border-color: #dee2e6 !important;
+}
+
+.dropdown-menu {
+    background-color: #343a40 !important;
+    color: #fff !important;
+    border: 1px solid rgba(0, 0, 0, .25) !important;
+}
+
+.modal-content {
+    color: #fff !important;
+    background-color: #343a40 !important;
+    border: 1px solid rgba(0, 0, 0, .25) !important;
+}
+
+button.close {
+    color: #fff !important;
+}

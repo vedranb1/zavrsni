@@ -5,9 +5,7 @@ using System.Threading.Tasks;
 
 namespace Redis.ViewModels
 {
-    public class BaseViewModel
+    public class SettingsViewModel : BaseViewModel
     {
-        public int ItemsCounter { get; set; } = 0;
-        public bool DarkTheme { get; set; } = false;
     }
 }
